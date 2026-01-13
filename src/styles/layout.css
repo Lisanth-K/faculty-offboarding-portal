@@ -1,0 +1,56 @@
+/* src/styles/layout.css */
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.dashboard-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+  .grid-layout {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Laptop and up */
+@media (min-width: 1024px) {
+  .grid-layout {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.login-page-container {
+  display: flex;             /* Turn on Flexbox */
+  align-items: center;       /* Center Vertically */
+  justify-content: center;   /* Center Horizontally */
+  min-height: 100vh;         /* Force full screen height */
+  background-color: #f9fafb; /* Light gray background */
+  width: 100%;
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 400px;          /* Restrict width so it doesn't stretch */
+  margin: 0 auto;            /* Center it safely */
+}

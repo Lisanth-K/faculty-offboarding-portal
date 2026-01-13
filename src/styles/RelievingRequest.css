@@ -1,0 +1,227 @@
+/* --- Global & Container --- */
+.request-card {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    width: 95%;
+    max-width: 800px; 
+    margin: 40px auto; 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* --- Applicant Details Section --- */
+.applicant-details {
+    background-color: #f8fafc;
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.applicant-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+}
+
+.applicant-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px;
+}
+
+/* --- Detail Items (Shared Labels/Values) --- */
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.detail-value-text {
+    font-size: 1rem;
+    color: #334155;
+    margin-top: 5px;
+    line-height: 1.5;
+}
+
+/* --- Form Elements --- */
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.file-upload-box {
+    border: 2px dashed #cbd5e1;
+    padding: 1.5rem;
+    background-color: #fbfcfe;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+    padding: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* --- Status View Specifics --- */
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.status-SUBMITTED { background-color: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; }
+
+.status-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.status-row {
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+}
+
+.document-view-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    background: #f0f7ff;
+    border-radius: 6px;
+}
+
+/* --- Status Tracking & Action Box (Split Layout) --- */
+.status-action-split {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    border-radius: 12px;
+    padding: 24px;
+    border-width: 1px;
+    border-style: solid;
+    align-items: center;
+}
+
+.status-phase-box {
+    border-right: 1px solid rgba(0,0,0,0.1);
+    padding-right: 20px;
+}
+
+.phase-main {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.phase-sub {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 4px 0 0 0;
+}
+
+.status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.remarks-box {
+    margin-top: 10px;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #f43f5e;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.remarks-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #991b1b;
+    text-transform: uppercase;
+    display: block;
+}
+
+.locked-info {
+    text-align: center;
+    border: 1px dashed rgba(0,0,0,0.1);
+    padding: 14px;
+    background-color: rgba(255,255,255,0.5);
+    border-radius: 8px;
+}
+
+/* --- Utility Color Themes --- */
+.text-blue-600 { color: #2563eb; }
+.text-green-600 { color: #16a34a; }
+.text-red-600 { color: #dc2626; }
+
+.bg-blue-50 { background-color: #eff6ff; }
+.bg-green-50 { background-color: #f0fdf4; }
+.bg-red-50 { background-color: #fef2f2; }
+
+.border-blue-200 { border-color: #bfdbfe; }
+.border-green-200 { border-color: #bbf7d0; }
+.border-red-200 { border-color: #fecaca; }
+
+.bg-blue-500 { background-color: #3b82f6; }
+.bg-green-500 { background-color: #22c55e; }
+.bg-red-500 { background-color: #ef4444; }

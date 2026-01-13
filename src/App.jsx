@@ -1,13 +1,18 @@
-import { Routes, Route } from 'react-router-dom'
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import AppRoutes from './routes/AppRoutes';
+// NO CSS IMPORT HERE
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route path="/" element={<h1 className="text-3xl font-bold p-10 text-brand-600">Faculty Offboarding Portal Setup Complete 🚀</h1>} />
-      </Routes>
-    </div>
-  )
+    <Router>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </Router>
+  );
 }
 
-export default App
+export default App;
