@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Login from '../pages/Login';
 import FacultyDashboard from '../pages/Faculty/FacultyDashboard';
 import RelievingRequest from '../pages/Faculty/RelievingRequest';
+import FacultyCertificates from '../pages/Faculty/FacultyCertificates'; // 1. ADD THIS IMPORT
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 
 // Security Guard: Checks if user is logged in
@@ -27,6 +28,9 @@ const AppRoutes = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
         <Route path="/faculty/request-relieving" element={<RelievingRequest />} />
+        {/* 2. ADD THIS ROUTE */}
+        <Route path="/faculty/certificates" element={<FacultyCertificates />} /> 
+        
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Route>
     </Routes>
