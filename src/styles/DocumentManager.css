@@ -1,0 +1,73 @@
+.certificate-manager-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: #fdfdfd;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+}
+
+.cert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.exp-calc {
+    font-size: 0.75rem;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.cert-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.cert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.cert-item p {
+    font-weight: 600;
+    margin: 0;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.btn-cert {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid #2563eb;
+    background: transparent;
+    color: #2563eb;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cert:hover:not(:disabled) {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-cert.done {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #047857;
+}
+
+.btn-cert:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
