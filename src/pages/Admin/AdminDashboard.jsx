@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import DocumentIssuer from './DocumentIssuer';
 import { supabase } from '../../config/supabase';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/AdminDashboard.css';
+
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -189,6 +191,12 @@ const AdminDashboard = () => {
                                         </>
                                     )}
                                 </div>
+                                {selectedRequest.status === 'APPROVED' && (
+    <DocumentIssuer 
+        selectedRequest={selectedRequest} 
+        onUpdate={fetchRequests} 
+    />
+)}
                             </div> /* This was the missing closing div for verification-glass-card */
                         ) : (
                             <div className="empty-panel-view">
