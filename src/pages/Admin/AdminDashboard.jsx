@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import DocumentIssuer from './DocumentIssuer';
+import ClearanceTracker from './ClearanceTracker';
 import { supabase } from '../../config/supabase';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/AdminDashboard.css';
-
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -17,20 +17,34 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchRequests = async () => {
+        // Explicitly naming relations to avoid naming mismatches in Supabase
         const { data, error } = await supabase
             .from('relieving_requests')
             .select(`
                 *,
-                faculties (
-                    full_name,
-                    employee_id
-                )
+                faculties (*),
+                academic_clearance:academic_clearance(*),
+                library_clearance:library_clearance(*),
+                financial_clearance:financial_clearance(*),
+                asset_clearance:asset_clearance(*)
             `);
         
         if (error) {
-            console.error('Error fetching:', error);
+            console.error('Error fetching data:', error);
+            // Fallback: Simplified fetch
+            const { data: simpleData } = await supabase
+                .from('relieving_requests')
+                .select('*, faculties(*)');
+            setRequests(simpleData || []);
         } else {
+            console.log("Fetched Data Successfully:", data); 
             setRequests(data || []);
+            
+            // Real-time UI update sync
+            if (selectedRequest) {
+                const updated = data.find(r => r.id === selectedRequest.id);
+                if (updated) setSelectedRequest(updated);
+            }
         }
     };
 
@@ -63,6 +77,7 @@ const AdminDashboard = () => {
     };
 
     const checkNoticePeriod = (proposedDate) => {
+        if(!proposedDate) return 0;
         const today = new Date();
         const lastDay = new Date(proposedDate);
         const diffTime = Math.abs(lastDay - today);
@@ -99,7 +114,10 @@ const AdminDashboard = () => {
                                 <div 
                                     key={req.id} 
                                     className={`modern-request-card ${selectedRequest?.id === req.id ? 'active' : ''}`}
-                                    onClick={() => { setSelectedRequest(req); setRemarks(req.admin_remarks || ''); }}
+                                    onClick={() => { 
+                                        setSelectedRequest(req); 
+                                        setRemarks(req.admin_remarks || ''); 
+                                    }}
                                 >
                                     <div className="card-top">
                                         <span className="faculty-uid">
@@ -147,12 +165,6 @@ const AdminDashboard = () => {
                                     <div className="reason-text">{selectedRequest.reason}</div>
                                 </div>
 
-                                {selectedRequest.resignation_letter_url && (
-                                    <a href={selectedRequest.resignation_letter_url} target="_blank" rel="noreferrer" className="doc-link-button">
-                                        <span className="icon">📄</span> View Resignation Letter
-                                    </a>
-                                )}
-
                                 <div className="remarks-container">
                                     <label>Admin Remarks</label>
                                     <textarea 
@@ -168,36 +180,25 @@ const AdminDashboard = () => {
                                             {selectedRequest.status === 'APPROVED' ? (
                                                 <p className="status-locked-text success">✅ This request has been Approved.</p>
                                             ) : (
-                                                <p className="status-locked-text error">❌ This request was Rejected. Waiting for faculty to resubmit.</p>
+                                                <p className="status-locked-text error">❌ This request was Rejected.</p>
                                             )}
-                                            <p className="status-locked-subtext">Actions are disabled for completed reviews.</p>
                                         </div>
                                     ) : (
-                                        <>
-                                            <button 
-                                                disabled={loading} 
-                                                onClick={() => handleAction('REJECTED')} 
-                                                className="btn-action reject"
-                                            >
-                                                {loading ? 'Processing...' : 'Reject Request'}
-                                            </button>
-                                            <button 
-                                                disabled={loading} 
-                                                onClick={() => handleAction('APPROVED')} 
-                                                className="btn-action approve"
-                                            >
-                                                {loading ? 'Processing...' : 'Approve Request'}
-                                            </button>
-                                        </>
+                                        <ClearanceTracker 
+                                            request={selectedRequest} 
+                                            loading={loading} 
+                                            onAction={handleAction} 
+                                        />
                                     )}
                                 </div>
+
                                 {selectedRequest.status === 'APPROVED' && (
-    <DocumentIssuer 
-        selectedRequest={selectedRequest} 
-        onUpdate={fetchRequests} 
-    />
-)}
-                            </div> /* This was the missing closing div for verification-glass-card */
+                                    <DocumentIssuer 
+                                        selectedRequest={selectedRequest} 
+                                        onUpdate={fetchRequests} 
+                                    />
+                                )}
+                            </div>
                         ) : (
                             <div className="empty-panel-view">
                                 <div className="empty-icon">📁</div>
