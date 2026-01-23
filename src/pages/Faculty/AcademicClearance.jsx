@@ -30,10 +30,13 @@ const AcademicClearance = () => {
       const { data: req } = await supabase.from('relieving_requests').select('id').eq('faculty_id', profile.id).maybeSingle();
       setRequestId(req?.id);
 
-      const { data: existing } = await supabase.from('academic_clearance').select('*').eq('faculty_id', profile.id).maybeSingle();
-      if (existing) {
-        setFormData(existing);
-        setSubmitted(true);
+      // Fetch existing data using request_id
+      if (req?.id) {
+          const { data: existing } = await supabase.from('academic_clearance').select('*').eq('request_id', req.id).maybeSingle();
+          if (existing) {
+            setFormData(existing);
+            if(existing.status === 'APPROVED') setSubmitted(true);
+          }
       }
     } catch (err) {
       console.error(err);
@@ -46,24 +49,25 @@ const AcademicClearance = () => {
     e.preventDefault();
     if (!requestId) return alert("Please submit a Relieving Request first!");
     
-    // Safety check: Ensure they actually checked the boxes
     if(!formData.syllabus_completed || !formData.internal_marks_uploaded || !formData.lab_records_submitted) {
         return alert("Please acknowledge all requirements before submitting.");
     }
 
     setSubmitting(true);
-    const { error } = await supabase.from('academic_clearance').insert([{
+    
+    // UPSERT Logic: Record iruntha update pannum, illana create pannum
+    const { error } = await supabase.from('academic_clearance').upsert([{
       faculty_id: faculty.id,
       request_id: requestId,
-      status: 'APPROVED', // THIS IS THE KEY FIX
+      status: 'APPROVED', 
       ...formData
-    }]);
+    }], { onConflict: 'request_id' }); 
 
     if (!error) {
       setSubmitted(true);
-      alert("Academic clearance submitted and approved!");
+      alert("Academic clearance submitted successfully!");
     } else {
-      alert(error.message);
+      alert("Error: " + error.message);
     }
     setSubmitting(false);
   };

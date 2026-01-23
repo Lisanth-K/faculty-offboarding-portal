@@ -17,7 +17,6 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchRequests = async () => {
-        // Explicitly naming relations to avoid naming mismatches in Supabase
         const { data, error } = await supabase
             .from('relieving_requests')
             .select(`
@@ -31,16 +30,14 @@ const AdminDashboard = () => {
         
         if (error) {
             console.error('Error fetching data:', error);
-            // Fallback: Simplified fetch
             const { data: simpleData } = await supabase
                 .from('relieving_requests')
                 .select('*, faculties(*)');
             setRequests(simpleData || []);
         } else {
-            console.log("Fetched Data Successfully:", data); 
             setRequests(data || []);
             
-            // Real-time UI update sync
+            // Selected request-ai real-time-la update panna
             if (selectedRequest) {
                 const updated = data.find(r => r.id === selectedRequest.id);
                 if (updated) setSelectedRequest(updated);
@@ -184,10 +181,14 @@ const AdminDashboard = () => {
                                             )}
                                         </div>
                                     ) : (
+                                        /* Mukkiyamaana maatram: 
+                                           onRefresh prop ippo fetchRequests function-ai connect pannuthu.
+                                        */
                                         <ClearanceTracker 
                                             request={selectedRequest} 
                                             loading={loading} 
                                             onAction={handleAction} 
+                                            onRefresh={fetchRequests} 
                                         />
                                     )}
                                 </div>

@@ -72,7 +72,7 @@ const RelievingRequest = ({ faculty, existingRequest, onRefresh }) => {
         fileUrl = data.publicUrl;
       }
 
-      // 2. Prepare Payload based on your schema
+      // 2. Prepare Payload
       const payload = {
         faculty_id: faculty.id,
         proposed_last_working_day: formData.last_working_day,
@@ -82,139 +82,171 @@ const RelievingRequest = ({ faculty, existingRequest, onRefresh }) => {
         updated_at: new Date().toISOString()
       };
 
-      // 3. Database Operation
+      // 3. Database Operation with Auto-Linking
       if (existingRequest) {
-        await supabase.from('relieving_requests').update(payload).eq('id', existingRequest.id);
+        // CASE: Updating an existing request
+        const { error } = await supabase
+          .from('relieving_requests')
+          .update(payload)
+          .eq('id', existingRequest.id);
+        
+        if (error) throw error;
       } else {
-        await supabase.from('relieving_requests').insert([payload]);
+        // CASE: New Request - Create request and link other 3 tables
+        const { data: newRequest, error: insertError } = await supabase
+          .from('relieving_requests')
+          .insert([payload])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        const NEW_ID = newRequest.id;
+
+        // Auto-create entries in the other 3 tables with the NEW_ID
+        // Intha logic NULL problem-ai solve pannum
+        const tablesToLink = [
+          { name: 'library_clearance', data: { books_returned: false, fines_paid: false } },
+          { name: 'financial_clearance', data: { advance_settled: false, salary_processed: false } },
+          { name: 'asset_clearance', data: { laptop_returned: false, id_card_returned: false } }
+        ];
+
+        const linkingPromises = tablesToLink.map(item => 
+          supabase.from(item.name).insert([{
+            request_id: NEW_ID,
+            faculty_id: faculty.id,
+            status: 'PENDING',
+            ...item.data
+          }])
+        );
+
+        await Promise.all(linkingPromises);
       }
 
-      alert("Relieving request submitted successfully!");
-      onRefresh(); // Refresh dashboard to show the status view
+      alert("Relieving request submitted and all departments linked successfully!");
+      onRefresh(); 
       setIsEditing(false);
 
     } catch (error) {
+      console.error("Submission Error:", error);
       alert("Submission Error: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-const ApplicantDetails = () => (
-  <div className="applicant-details">
-    <span className="applicant-title">Faculty Information</span>
-    <div className="applicant-grid">
-      <div className="detail-item">
-        <span className="detail-label">Full Name</span>
-        <span className="detail-value">{faculty?.full_name || 'Not Available'}</span>
-      </div>
-      <div className="detail-item">
-        <span className="detail-label">Employee ID</span>
-        <span className="detail-value">{faculty?.employee_id || 'Not Available'}</span>
-      </div>
-      <div className="detail-item">
-        <span className="detail-label">Designation</span>
-        <span className="detail-value">{faculty?.designation || 'N/A'}</span>
-      </div>
-      <div className="detail-item">
-        <span className="detail-label">Department</span>
-        <span className="detail-value">{faculty?.department_id || 'N/A'}</span>
-      </div>
-    </div>
-  </div>
-);
-
-// --- VIEW 1: STATUS VIEW (Read Only) ---
-if (!isEditing && existingRequest) {
-  // Determine color theme based on status
-  const statusTheme = {
-    SUBMITTED: { text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-500' },
-    APPROVED: { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', dot: 'bg-green-500' },
-    REJECTED: { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500' }
-  }[existingRequest.status] || { text: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
-
-  return (
-    <div className="request-card">
-      <div className="card-header-flex">
-        <h2 className="status-view-title">Request Status</h2>
-        <span className={`status-badge status-${existingRequest.status}`}>
-          {existingRequest.status}
-        </span>
-      </div>
-
-      <ApplicantDetails />
-
-      <div className="status-info-section">
-        {/* Existing Data Rows (Last Working Day, Reason, Document) */}
-        <div className="status-row">
-          <div className="detail-item">
-            <span className="detail-label">Proposed Last Working Day</span>
-            <span className="detail-value">{existingRequest.proposed_last_working_day}</span>
-          </div>
+  const ApplicantDetails = () => (
+    <div className="applicant-details">
+      <span className="applicant-title">Faculty Information</span>
+      <div className="applicant-grid">
+        <div className="detail-item">
+          <span className="detail-label">Full Name</span>
+          <span className="detail-value">{faculty?.full_name || 'Not Available'}</span>
         </div>
-
-        <div className="status-row">
-          <div className="detail-item">
-            <span className="detail-label">Reason for Leaving</span>
-            <p className="detail-value-text">{existingRequest.reason}</p>
-          </div>
+        <div className="detail-item">
+          <span className="detail-label">Employee ID</span>
+          <span className="detail-value">{faculty?.employee_id || 'Not Available'}</span>
         </div>
-
-        {existingRequest.resignation_letter_url && (
-          <div className="status-row">
-            <div className="detail-item">
-              <span className="detail-label">Attached Document</span>
-              <div>
-                <a href={existingRequest.resignation_letter_url} target="_blank" rel="noreferrer" className="document-view-link">
-                  View Resignation Letter
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* TRACKING BOX AT THE END */}
-      <div className={`status-action-split mt-8 ${statusTheme.bg} ${statusTheme.border}`}>
-        <div className="status-phase-box">
-          <span className="detail-label">Current Progress</span>
-          <div className="phase-content">
-            <div className="flex items-center gap-2">
-              <span className={`status-dot ${statusTheme.dot}`}></span>
-              <p className={`phase-main ${statusTheme.text}`}>
-                {existingRequest.status === 'SUBMITTED' ? 'Submitted' : 
-                 existingRequest.status === 'APPROVED' ? 'Accepted' : 'Rejected'}
-              </p>
-            </div>
-            
-            {existingRequest.status === 'SUBMITTED' && <p className="phase-sub">Pending for admin approval</p>}
-            {existingRequest.status === 'APPROVED' && <p className="phase-sub">Your request has been successfully accepted.</p>}
-            
-{existingRequest.status === 'REJECTED' && (
-  <div className="remarks-box">
-    <span className="remarks-label">Admin Remarks:</span>
-    {/* Change existingRequest.remarks to existingRequest.admin_remarks */}
-    <p className="phase-sub italic">{existingRequest.admin_remarks || "No remarks provided."}</p>
-  </div>
-)}
-          </div>
+        <div className="detail-item">
+          <span className="detail-label">Designation</span>
+          <span className="detail-value">{faculty?.designation || 'N/A'}</span>
         </div>
-
-        <div className="action-button-box">
-          {existingRequest.status === 'REJECTED' ? (
-            <button onClick={() => setIsEditing(true)} className="btn-primary w-full">
-              Edit & Resubmit
-            </button>
-          ) : (
-            <div className="locked-info">
-              <p className="text-xs text-gray-500 font-medium">Editing disabled while {existingRequest.status.toLowerCase()}</p>
-            </div>
-          )}
+        <div className="detail-item">
+          <span className="detail-label">Department</span>
+          <span className="detail-value">{faculty?.department_id || 'N/A'}</span>
         </div>
       </div>
     </div>
   );
-}
+
+  // --- VIEW 1: STATUS VIEW (Read Only) ---
+  if (!isEditing && existingRequest) {
+    const statusTheme = {
+      SUBMITTED: { text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-500' },
+      APPROVED: { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', dot: 'bg-green-500' },
+      REJECTED: { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500' }
+    }[existingRequest.status] || { text: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
+
+    return (
+      <div className="request-card">
+        <div className="card-header-flex">
+          <h2 className="status-view-title">Request Status</h2>
+          <span className={`status-badge status-${existingRequest.status}`}>
+            {existingRequest.status}
+          </span>
+        </div>
+
+        <ApplicantDetails />
+
+        <div className="status-info-section">
+          <div className="status-row">
+            <div className="detail-item">
+              <span className="detail-label">Proposed Last Working Day</span>
+              <span className="detail-value">{existingRequest.proposed_last_working_day}</span>
+            </div>
+          </div>
+
+          <div className="status-row">
+            <div className="detail-item">
+              <span className="detail-label">Reason for Leaving</span>
+              <p className="detail-value-text">{existingRequest.reason}</p>
+            </div>
+          </div>
+
+          {existingRequest.resignation_letter_url && (
+            <div className="status-row">
+              <div className="detail-item">
+                <span className="detail-label">Attached Document</span>
+                <div>
+                  <a href={existingRequest.resignation_letter_url} target="_blank" rel="noreferrer" className="document-view-link">
+                    View Resignation Letter
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className={`status-action-split mt-8 ${statusTheme.bg} ${statusTheme.border}`}>
+          <div className="status-phase-box">
+            <span className="detail-label">Current Progress</span>
+            <div className="phase-content">
+              <div className="flex items-center gap-2">
+                <span className={`status-dot ${statusTheme.dot}`}></span>
+                <p className={`phase-main ${statusTheme.text}`}>
+                  {existingRequest.status === 'SUBMITTED' ? 'Submitted' : 
+                   existingRequest.status === 'APPROVED' ? 'Accepted' : 'Rejected'}
+                </p>
+              </div>
+              
+              {existingRequest.status === 'SUBMITTED' && <p className="phase-sub">Pending for admin approval</p>}
+              {existingRequest.status === 'APPROVED' && <p className="phase-sub">Your request has been successfully accepted.</p>}
+              
+              {existingRequest.status === 'REJECTED' && (
+                <div className="remarks-box">
+                  <span className="remarks-label">Admin Remarks:</span>
+                  <p className="phase-sub italic">{existingRequest.admin_remarks || "No remarks provided."}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="action-button-box">
+            {existingRequest.status === 'REJECTED' ? (
+              <button onClick={() => setIsEditing(true)} className="btn-primary w-full">
+                Edit & Resubmit
+              </button>
+            ) : (
+              <div className="locked-info">
+                <p className="text-xs text-gray-500 font-medium">Editing disabled while {existingRequest.status.toLowerCase()}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // --- VIEW 2: FORM VIEW ---
   return (
     <div className="request-card">
